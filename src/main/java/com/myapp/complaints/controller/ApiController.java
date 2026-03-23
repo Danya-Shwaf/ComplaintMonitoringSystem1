@@ -2,12 +2,15 @@ package com.myapp.complaints.controller;
 
 
 import com.myapp.complaints.dto.ComplaintCreateDto;
+import com.myapp.complaints.dto.ComplaintFilterRequestDto;
 import com.myapp.complaints.dto.ComplaintResponseDto;
 import com.myapp.complaints.service.ApiService;
 import com.myapp.complaints.service.StatisticsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +23,9 @@ public class ApiController {
 
 
     private  final ApiService apiService;
+    private final StatisticsService statisticsService;
+
+// content-type: multipart/form-data not Json, before data+images
     @PostMapping("/complaint")
     public ResponseEntity<?> createComplaint(
             @Valid @RequestBody ComplaintCreateDto dto) {
@@ -28,18 +34,29 @@ public class ApiController {
                 apiService.createComplaint(dto)
         );
     }
+//    @PostMapping(value="/complaint", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<?> createComplaint(
+//
+//            @Valid @RequestPart("data") ComplaintCreateDto dto,
+//
+//            @RequestPart(value="images", required=false)
+//            List<MultipartFile> images
+//    ) {
+//
+//        return ResponseEntity.ok(
+//                apiService.createComplaint(dto, images)
+//        );
+//    }
+//    @GetMapping("/homepage/dashboard/top10complaints")
+//    public ResponseEntity<List<ComplaintResponseDto>> getLastComplaints() {
+//
+//        return ResponseEntity.ok(
+//                apiService.getLast10Complaints()
+//        );
+//    }
 
-    @GetMapping("/latest")
-    public ResponseEntity<List<ComplaintResponseDto>> getLastComplaints() {
-
-        return ResponseEntity.ok(
-                apiService.getLast10Complaints()
-        );
-    }
-
-        private final StatisticsService statisticsService;
-
-        @GetMapping("/statistics/homePage")
+//TODO: Replace with specification Query
+        @GetMapping("/homepage/dashboard/statistics")
         public Map<String, Long> getHomeStatistics() {
             return Map.of(
                     "totalComplaints", statisticsService.getTotalComplaints(),
@@ -63,6 +80,39 @@ public class ApiController {
     public ResponseEntity<?> employeeProfile(
     ){
         return ResponseEntity.ok(apiService.getEmployeeInfoInfo());
+    }
+
+//    @GetMapping("/dashboard/citizen")
+//    public ResponseEntity<?> getCitizenDashboard() {
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        String email = auth.getName();
+//        return ResponseEntity.ok(statisticsService.buildCitizenDashboardResponse(email));
+//    }
+//TODO: Replace with specification Query
+    @GetMapping("/citizen/dashboard/statistics")
+    public ResponseEntity<?> getCitizenDashboardStatistics() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        return ResponseEntity.ok(statisticsService.getCitizenDashboardStatistics(email));
+    }
+
+//    @GetMapping("/citizen/dashboard/top3Complaints")
+//    public ResponseEntity<?> getTop3CitizenComplaints() {
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        String email = auth.getName();
+//        return ResponseEntity.ok(statisticsService.getTop3ComplaintsForCitizen(email));
+//    }
+
+//    @GetMapping("/citizen/dashboard/allComplaints")
+//    public ResponseEntity<?> getAllCitizenComplaints() {
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        String email = auth.getName();
+//        return ResponseEntity.ok(statisticsService.getAllComplaintsForCitizen(email));
+//    }
+
+    @GetMapping("/getComplaints")
+    public ResponseEntity<?> getComplaints(ComplaintFilterRequestDto filter) {
+        return ResponseEntity.ok(apiService.getComplaints(filter));
     }
 
 //
